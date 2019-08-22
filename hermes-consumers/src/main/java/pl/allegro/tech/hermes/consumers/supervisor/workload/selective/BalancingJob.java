@@ -82,7 +82,7 @@ public class BalancingJob implements Runnable {
                 try (Timer.Context ctx = metrics.consumersWorkloadRebalanceDurationTimer(kafkaCluster).time()) {
                     logger.info("Initializing workload balance.");
 
-                    SubscriptionAssignmentView initialState = workTracker.getAssignments();
+                    SubscriptionAssignmentView initialState = workTracker.getAssignmentsSnapshot();
 
                     WorkBalancingResult work = workBalancer.balance(
                             subscriptionsCache.listActiveSubscriptionNames(),

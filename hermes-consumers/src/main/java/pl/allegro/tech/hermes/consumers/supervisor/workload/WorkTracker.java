@@ -48,7 +48,7 @@ public class WorkTracker {
         return new WorkDistributionChanges(assignmentDeletions.size(), assignmentAdditions.size());
     }
 
-    public SubscriptionAssignmentView getAssignments() {
+    public SubscriptionAssignmentView getAssignmentsSnapshot() {
         return registry.createSnapshot();
     }
 

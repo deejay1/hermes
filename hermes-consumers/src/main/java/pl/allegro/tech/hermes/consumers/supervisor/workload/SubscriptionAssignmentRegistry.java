@@ -28,13 +28,10 @@ public class SubscriptionAssignmentRegistry implements SubscriptionAssignmentAwa
         this.curator = curator;
         this.pathSerializer = pathSerializer;
         this.subscriptionAssignmentCache = subscriptionAssignmentCache;
+        this.subscriptionAssignmentCache.registerAssignmentCallback(this);
     }
 
-    public void start() throws Exception {
-        subscriptionAssignmentCache.registerAssignmentCallback(this);
-    }
-
-    public boolean isStarted() {
+    boolean isStarted() {
         return subscriptionAssignmentCache.isStarted();
     }
 
@@ -51,15 +48,11 @@ public class SubscriptionAssignmentRegistry implements SubscriptionAssignmentAwa
         return Optional.empty();
     }
 
-    public void registerAssignmentCallback(SubscriptionAssignmentAware callback) {
-        subscriptionAssignmentCache.registerAssignmentCallback(callback);
-    }
-
     boolean isAssignedTo(String nodeId, SubscriptionName subscription) {
         return subscriptionAssignmentCache.isAssignedTo(nodeId, subscription);
     }
 
-    public SubscriptionAssignmentView createSnapshot() {
+    SubscriptionAssignmentView createSnapshot() {
         return subscriptionAssignmentCache.createSnapshot();
     }
 

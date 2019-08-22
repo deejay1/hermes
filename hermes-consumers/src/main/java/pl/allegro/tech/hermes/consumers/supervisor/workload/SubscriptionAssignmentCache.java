@@ -118,7 +118,7 @@ public class SubscriptionAssignmentCache {
                         && a.getConsumerNodeId().equals(nodeId));
     }
 
-    void registerAssignmentCallback(SubscriptionAssignmentAware callback) {
+    public void registerAssignmentCallback(SubscriptionAssignmentAware callback) {
         callbacks.add(callback);
     }
 

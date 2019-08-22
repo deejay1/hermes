@@ -155,7 +155,7 @@ class ConsumerTestRuntimeEnvironment {
         WorkTracker workTracker = new WorkTracker(consumerId, assignmentRegistry);
 
         SelectiveSupervisorController supervisor = new SelectiveSupervisorController(
-                consumersSupervisor, notificationsBus, subscriptionsCache, assignmentRegistry, workTracker, registry,
+                consumersSupervisor, notificationsBus, subscriptionsCache, subscriptionAssignmentCache, workTracker, registry,
                 mock(ZookeeperAdminCache.class), executorService, configFactory, metricsSupplier.get()
         );
 

@@ -62,7 +62,6 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
     public void before() throws Exception {
         notifyingCache.start();
         subscriptionAssignmentCache.start();
-        subscriptionAssignmentRegistry.start();
     }
 
     @After
@@ -104,7 +103,7 @@ public class WorkTrackerTest extends ZookeeperBaseTest {
         Subscription s2 = forceAssignment(anySubscription());
 
         // when
-        SubscriptionAssignmentView assignments = workTracker.getAssignments();
+        SubscriptionAssignmentView assignments = workTracker.getAssignmentsSnapshot();
 
         // then
         assertThat(assignments.getSubscriptions()).containsOnly(s1.getQualifiedName(), s2.getQualifiedName());
