@@ -20,19 +20,19 @@ public class SubscriptionAssignmentRegistry implements SubscriptionAssignmentAwa
     private final CuratorFramework curator;
 
     private final SubscriptionAssignmentPathSerializer pathSerializer;
-    private final SubscriptionAssignmentCache subscriptionAssignmentCache;
+    private final SubscriptionAssignmentNotifyingRepository subscriptionAssignmentsRepository;
 
     public SubscriptionAssignmentRegistry(CuratorFramework curator,
-                                          SubscriptionAssignmentCache subscriptionAssignmentCache,
+                                          SubscriptionAssignmentNotifyingRepository subscriptionAssignmentsRepository,
                                           SubscriptionAssignmentPathSerializer pathSerializer) {
         this.curator = curator;
         this.pathSerializer = pathSerializer;
-        this.subscriptionAssignmentCache = subscriptionAssignmentCache;
-        this.subscriptionAssignmentCache.registerAssignmentCallback(this);
+        this.subscriptionAssignmentsRepository = subscriptionAssignmentsRepository;
+        this.subscriptionAssignmentsRepository.registerAssignmentCallback(this);
     }
 
     boolean isStarted() {
-        return subscriptionAssignmentCache.isStarted();
+        return subscriptionAssignmentsRepository.isStarted();
     }
 
     @Override
@@ -49,11 +49,11 @@ public class SubscriptionAssignmentRegistry implements SubscriptionAssignmentAwa
     }
 
     boolean isAssignedTo(String nodeId, SubscriptionName subscription) {
-        return subscriptionAssignmentCache.isAssignedTo(nodeId, subscription);
+        return subscriptionAssignmentsRepository.isAssignedTo(nodeId, subscription);
     }
 
     SubscriptionAssignmentView createSnapshot() {
-        return subscriptionAssignmentCache.createSnapshot();
+        return subscriptionAssignmentsRepository.createSnapshot();
     }
 
     void dropAssignment(SubscriptionAssignment assignment) {

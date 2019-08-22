@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentCache;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentNotifyingRepository;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkTracker;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
@@ -34,7 +34,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     private final ConsumersSupervisor supervisor;
     private final InternalNotificationsBus notificationsBus;
     private final SubscriptionsCache subscriptionsCache;
-    private final SubscriptionAssignmentCache subscriptionAssignmentCache;
+    private final SubscriptionAssignmentNotifyingRepository subscriptionAssignmentsRepository;
     private final WorkTracker workTracker;
     private final ConsumerNodesRegistry consumersRegistry;
     private final BalancingJob balancingJob;
@@ -46,7 +46,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     public SelectiveSupervisorController(ConsumersSupervisor supervisor,
                                          InternalNotificationsBus notificationsBus,
                                          SubscriptionsCache subscriptionsCache,
-                                         SubscriptionAssignmentCache subscriptionAssignmentCache,
+                                         SubscriptionAssignmentNotifyingRepository subscriptionAssignmentsRepository,
                                          WorkTracker workTracker,
                                          ConsumerNodesRegistry consumersRegistry,
                                          ZookeeperAdminCache adminCache,
@@ -57,7 +57,7 @@ public class SelectiveSupervisorController implements SupervisorController {
         this.supervisor = supervisor;
         this.notificationsBus = notificationsBus;
         this.subscriptionsCache = subscriptionsCache;
-        this.subscriptionAssignmentCache = subscriptionAssignmentCache;
+        this.subscriptionAssignmentsRepository = subscriptionAssignmentsRepository;
         this.workTracker = workTracker;
         this.consumersRegistry = consumersRegistry;
         this.adminCache = adminCache;
@@ -120,7 +120,7 @@ public class SelectiveSupervisorController implements SupervisorController {
 
         notificationsBus.registerSubscriptionCallback(this);
         notificationsBus.registerTopicCallback(this);
-        subscriptionAssignmentCache.registerAssignmentCallback(this);
+        subscriptionAssignmentsRepository.registerAssignmentCallback(this);
 
         supervisor.start();
         consumersRegistry.start();
@@ -143,7 +143,7 @@ public class SelectiveSupervisorController implements SupervisorController {
 
     @Override
     public Set<SubscriptionName> assignedSubscriptions() {
-        return subscriptionAssignmentCache.getConsumerSubscriptions(consumerId());
+        return subscriptionAssignmentsRepository.getConsumerSubscriptions(consumerId());
     }
 
     @Override
