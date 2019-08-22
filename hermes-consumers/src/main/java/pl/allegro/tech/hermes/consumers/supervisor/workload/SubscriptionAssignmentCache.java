@@ -108,7 +108,7 @@ public class SubscriptionAssignmentCache {
         return started;
     }
 
-    public SubscriptionAssignmentView createSnapshot() {
+    SubscriptionAssignmentView createSnapshot() {
         return SubscriptionAssignmentView.of(assignments);
     }
 
@@ -171,17 +171,22 @@ public class SubscriptionAssignmentCache {
     }
 
     public Map<SubscriptionName, Set<String>> getSubscriptionConsumers() {
-        return createSnapshot().getAllAssignments().stream()
+        return assignments.stream()
                 .collect(Collectors.groupingBy(
                         SubscriptionAssignment::getSubscriptionName,
                         Collectors.mapping(SubscriptionAssignment::getConsumerNodeId, Collectors.toSet())));
     }
 
     public Set<SubscriptionName> getConsumerSubscriptions(String consumerId) {
-        return createSnapshot().getSubscriptionsForConsumerNode(consumerId);
+        return assignments.stream()
+                .filter(assignment -> consumerId.equals(assignment.getConsumerNodeId()))
+                .map(SubscriptionAssignment::getSubscriptionName)
+                .collect(Collectors.toSet());
     }
 
     public Set<String> getAssignedConsumers() {
-        return createSnapshot().getConsumerNodes();
+        return assignments.stream()
+                .map(SubscriptionAssignment::getConsumerNodeId)
+                .collect(Collectors.toSet());
     }
 }
