@@ -112,12 +112,14 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
 
     @Override
     public void deleteConstraints(TopicName topicName) {
+        logger.info("Deleting constraints for topic {}", topicName.qualifiedName());
         String path = paths.consumersWorkloadConstraintsPath(topicName.qualifiedName());
         deleteConstraints(path);
     }
 
     @Override
     public void deleteConstraints(SubscriptionName subscriptionName) {
+        logger.info("Deleting constraints for subscription {}", subscriptionName.getQualifiedName());
         String path = paths.consumersWorkloadConstraintsPath(subscriptionName.getQualifiedName());
         deleteConstraints(path);
     }
@@ -127,6 +129,26 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
             zookeeper.delete().forPath(path);
         } catch (KeeperException.NoNodeException e) {
             // ignore - it's ok
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
+    }
+
+    @Override
+    public boolean constraintsExist(TopicName topicName) {
+        String path = paths.consumersWorkloadConstraintsPath(topicName.qualifiedName());
+        return constraintsExist(path);
+    }
+
+    @Override
+    public boolean constraintsExist(SubscriptionName subscriptionName) {
+        String path = paths.consumersWorkloadConstraintsPath(subscriptionName.getQualifiedName());
+        return constraintsExist(path);
+    }
+
+    private boolean constraintsExist(String path) {
+        try {
+            return zookeeper.checkExists().forPath(path) != null;
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }

@@ -19,4 +19,8 @@ public interface WorkloadConstraintsRepository {
     void deleteConstraints(TopicName topicName);
 
     void deleteConstraints(SubscriptionName subscriptionName);
+
+    boolean constraintsExist(TopicName topicName);
+
+    boolean constraintsExist(SubscriptionName subscriptionName);
 }

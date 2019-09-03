@@ -184,6 +184,34 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
         noExceptionThrown()
     }
 
+    def "should return true if topic constraints exist"() {
+        given:
+        setupNode('/hermes/consumers-workload-constraints/group.topic', new Constraints(1))
+        ensureCacheWasUpdated(1)
+
+        expect:
+        repository.constraintsExist(TopicName.fromQualifiedName('group.topic'))
+    }
+
+    def "should return false if topic constraints do not exist"() {
+        expect:
+        !repository.constraintsExist(TopicName.fromQualifiedName('group.topic'))
+    }
+
+    def "should return true if subscription constraints exist"() {
+        given:
+        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(1))
+        ensureCacheWasUpdated(1)
+
+        expect:
+        repository.constraintsExist(SubscriptionName.fromString('group.topic$sub'))
+    }
+
+    def "should return false if subscription constraints do not exist"() {
+        expect:
+        !repository.constraintsExist(SubscriptionName.fromString('group.topic$sub'))
+    }
+
     private def ensureCacheWasUpdated(int expectedSize) {
         await()
                 .atMost(200, TimeUnit.MILLISECONDS)
