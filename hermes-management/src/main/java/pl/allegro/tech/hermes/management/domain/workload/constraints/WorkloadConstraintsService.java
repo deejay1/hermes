@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.management.domain.workload.constraints.command.Cre
 import pl.allegro.tech.hermes.management.domain.workload.constraints.command.CreateTopicConstraintsRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.workload.constraints.command.DeleteSubscriptionConstraintsRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.workload.constraints.command.DeleteTopicConstraintsRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.workload.constraints.command.UpdateSubscriptionConstraintsRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.workload.constraints.command.UpdateTopicConstraintsRepositoryCommand;
 
 @Service
 public class WorkloadConstraintsService {
@@ -34,6 +36,14 @@ public class WorkloadConstraintsService {
 
     public void createConstraints(SubscriptionName subscriptionName, Constraints constraints) {
         commandExecutor.execute(new CreateSubscriptionConstraintsRepositoryCommand(subscriptionName, constraints));
+    }
+
+    public void updateConstraints(TopicName topicName, Constraints constraints) {
+        commandExecutor.execute(new UpdateTopicConstraintsRepositoryCommand(topicName, constraints));
+    }
+
+    public void updateConstraints(SubscriptionName subscriptionName, Constraints constraints) {
+        commandExecutor.execute(new UpdateSubscriptionConstraintsRepositoryCommand(subscriptionName, constraints));
     }
 
     public void deleteConstraints(TopicName topicName) {

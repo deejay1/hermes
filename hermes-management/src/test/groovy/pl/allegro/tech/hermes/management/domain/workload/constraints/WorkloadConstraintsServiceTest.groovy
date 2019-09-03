@@ -77,6 +77,28 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         assertNodesContains('group.topic$sub', new Constraints(1))
     }
 
+    def "should update topic constraints in all zk clusters"() {
+        given:
+        setupNodes('group.topic', new Constraints(1))
+
+        when:
+        service.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(2))
+
+        then:
+        assertNodesContains('group.topic', new Constraints(2))
+    }
+
+    def "should update subscription constraints in all zk clusters"() {
+        given:
+        setupNodes('group.topic$sub', new Constraints(1))
+
+        when:
+        service.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(2))
+
+        then:
+        assertNodesContains('group.topic$sub', new Constraints(2))
+    }
+
     def "should remove topic constraints in all zk clusters"() {
         given:
         setupNodes('group.topic', new Constraints(1))
