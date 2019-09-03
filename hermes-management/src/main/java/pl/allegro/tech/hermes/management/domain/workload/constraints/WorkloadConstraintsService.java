@@ -53,4 +53,12 @@ public class WorkloadConstraintsService {
     public void deleteConstraints(SubscriptionName subscriptionName) {
         commandExecutor.execute(new DeleteSubscriptionConstraintsRepositoryCommand(subscriptionName));
     }
+
+    public boolean constraintsExist(TopicName topicName) {
+        return workloadConstraintsRepository.constraintsExist(topicName);
+    }
+
+    public boolean constraintsExist(SubscriptionName subscriptionName) {
+        return workloadConstraintsRepository.constraintsExist(subscriptionName);
+    }
 }

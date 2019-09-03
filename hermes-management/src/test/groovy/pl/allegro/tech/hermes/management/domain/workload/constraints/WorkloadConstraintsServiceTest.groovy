@@ -121,6 +121,26 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         assertNodesDoesNotExist('group.topic$sub')
     }
 
+    def "should return true if topic constraints exist in local zk otherwise should return false"() {
+        given:
+        setupNodes('group.topic', new Constraints(1))
+        ensureCacheWasUpdated()
+
+        expect:
+        service.constraintsExist(TopicName.fromQualifiedName('group.topic'))
+        !service.constraintsExist(TopicName.fromQualifiedName('group.non-existent-topic'))
+    }
+
+    def "should return true if subscription constraints exist in local zk otherwise should return false"() {
+        given:
+        setupNodes('group.topic$sub', new Constraints(1))
+        ensureCacheWasUpdated()
+
+        expect:
+        service.constraintsExist(SubscriptionName.fromString('group.topic$sub'))
+        !service.constraintsExist(SubscriptionName.fromString('group.topic$non-existent-subscription'))
+    }
+
     private def assertNodesContains(String path, Constraints expectedConstraints) {
         manager.clients.each {
             def data = it.curatorFramework.getData().forPath("$WORKLOAD_CONSTRAINTS_PATH/$path")
