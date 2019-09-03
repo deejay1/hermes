@@ -6,7 +6,9 @@ import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.api.Constraints
 import pl.allegro.tech.hermes.domain.workload.constraints.SubscriptionConstraintsAlreadyExistException
+import pl.allegro.tech.hermes.domain.workload.constraints.SubscriptionConstraintsDoNotExistException
 import pl.allegro.tech.hermes.domain.workload.constraints.TopicConstraintsAlreadyExistException
+import pl.allegro.tech.hermes.domain.workload.constraints.TopicConstraintsDoNotExistException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
 import java.util.concurrent.TimeUnit
@@ -33,6 +35,20 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
 
     def cleanup() {
         cache.close()
+    }
+
+    def "should return constraints from cache"() {
+        given:
+        setupNode('/hermes/consumers-workload-constraints/group.topic', new Constraints(1))
+        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(3))
+        ensureCacheWasUpdated(2)
+
+        when:
+        def constraints = repository.getConsumersWorkloadConstraints()
+
+        then:
+        constraints.topicConstraints.get(TopicName.fromQualifiedName('group.topic')).consumersNumber == 1
+        constraints.subscriptionConstraints.get(SubscriptionName.fromString('group.topic$sub')).consumersNumber == 3
     }
 
     def "should create constraints for topic"() {
@@ -89,18 +105,51 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
         e.cause instanceof KeeperException.NodeExistsException
     }
 
-    def "should return constraints from cache"() {
+    def "should update topic constraints"() {
         given:
         setupNode('/hermes/consumers-workload-constraints/group.topic', new Constraints(1))
-        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(3))
-        ensureCacheWasUpdated(2)
+        ensureCacheWasUpdated(1)
 
         when:
-        def constraints = repository.getConsumersWorkloadConstraints()
+        repository.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(2))
 
         then:
-        constraints.topicConstraints.get(TopicName.fromQualifiedName('group.topic')).consumersNumber == 1
-        constraints.subscriptionConstraints.get(SubscriptionName.fromString('group.topic$sub')).consumersNumber == 3
+        assertNodeContainsData('/hermes/consumers-workload-constraints/group.topic', new Constraints(2))
+    }
+
+    def "should throw exception if topic node does not exist on update"() {
+        given:
+        def topic = TopicName.fromQualifiedName('group.topic')
+
+        when:
+        repository.updateConstraints(topic, new Constraints(1))
+
+        then:
+        def e = thrown(TopicConstraintsDoNotExistException)
+        e.message == "Constraints for topic group.topic do not exist."
+        e.cause instanceof KeeperException.NoNodeException
+    }
+
+    def "should update subscription constraints"() {
+        given:
+        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(1))
+        ensureCacheWasUpdated(1)
+
+        when:
+        repository.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(2))
+
+        then:
+        assertNodeContainsData('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(2))
+    }
+
+    def "should throw exception if subscription node does not exist on update"() {
+        when:
+        repository.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1))
+
+        then:
+        def e = thrown(SubscriptionConstraintsDoNotExistException)
+        e.message == 'Constraints for subscription group.topic$sub do not exist.'
+        e.cause instanceof KeeperException.NoNodeException
     }
 
     def "should delete topic constraints"() {

@@ -11,7 +11,9 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
 import pl.allegro.tech.hermes.domain.workload.constraints.SubscriptionConstraintsAlreadyExistException;
+import pl.allegro.tech.hermes.domain.workload.constraints.SubscriptionConstraintsDoNotExistException;
 import pl.allegro.tech.hermes.domain.workload.constraints.TopicConstraintsAlreadyExistException;
+import pl.allegro.tech.hermes.domain.workload.constraints.TopicConstraintsDoNotExistException;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 
 public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedRepository implements WorkloadConstraintsRepository {
@@ -36,9 +38,13 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
     }
 
     @Override
+    public ConsumersWorkloadConstraints getConsumersWorkloadConstraints() {
+        return pathChildrenCache.getConsumersWorkloadConstraints();
+    }
+
+    @Override
     public void createConstraints(TopicName topicName, Constraints constraints) {
         logger.info("Creating constraints for topic {}", topicName.qualifiedName());
-
         String path = paths.consumersWorkloadConstraintsPath(topicName.qualifiedName());
         try {
             createConstraints(path, constraints);
@@ -72,8 +78,36 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
     }
 
     @Override
-    public ConsumersWorkloadConstraints getConsumersWorkloadConstraints() {
-        return pathChildrenCache.getConsumersWorkloadConstraints();
+    public void updateConstraints(TopicName topicName, Constraints constraints) {
+        logger.info("Updating constraints for topic {}", topicName.qualifiedName());
+        String path = paths.consumersWorkloadConstraintsPath(topicName.qualifiedName());
+        try {
+            updateConstraints(path, constraints);
+        } catch (KeeperException.NoNodeException e) {
+            throw new TopicConstraintsDoNotExistException(topicName, e);
+        }
+    }
+
+    @Override
+    public void updateConstraints(SubscriptionName subscriptionName, Constraints constraints) {
+        logger.info("Updating constraints for subscription {}", subscriptionName.getQualifiedName());
+        String path = paths.consumersWorkloadConstraintsPath(subscriptionName.getQualifiedName());
+        try {
+            updateConstraints(path, constraints);
+        } catch (KeeperException.NoNodeException e) {
+            throw new SubscriptionConstraintsDoNotExistException(subscriptionName, e);
+        }
+    }
+
+    private void updateConstraints(String path, Constraints constraints) throws KeeperException.NoNodeException {
+        try {
+            byte[] bytes = mapper.writeValueAsBytes(constraints);
+            zookeeper.setData().forPath(path, bytes);
+        } catch (KeeperException.NoNodeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 
     @Override

@@ -6,11 +6,15 @@ import pl.allegro.tech.hermes.api.TopicName;
 
 public interface WorkloadConstraintsRepository {
 
+    ConsumersWorkloadConstraints getConsumersWorkloadConstraints();
+
     void createConstraints(TopicName topicName, Constraints constraints);
 
     void createConstraints(SubscriptionName subscriptionName, Constraints constraints);
 
-    ConsumersWorkloadConstraints getConsumersWorkloadConstraints();
+    void updateConstraints(TopicName topicName, Constraints constraints);
+
+    void updateConstraints(SubscriptionName subscriptionName, Constraints constraints);
 
     void deleteConstraints(TopicName topicName);
 
